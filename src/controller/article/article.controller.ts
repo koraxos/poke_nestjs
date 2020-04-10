@@ -1,10 +1,13 @@
-import {ClassSerializerInterceptor, Controller, Get, Inject, UseInterceptors} from '@nestjs/common';
+import {
+	ClassSerializerInterceptor,
+	Controller,
+	Get,
+	HttpStatus,
+	Inject,
+	Response,
+	UseInterceptors
+} from '@nestjs/common';
 import {ArticleService} from "../../service/article.service";
-import {ArticleDto} from "../../dto/article.dto";
-import {plainToClass} from "class-transformer";
-import {Observable, of} from "rxjs";
-import {map} from "rxjs/operators";
-import {ArticleEntity} from "../../domain/article.entity";
 
 @Controller('/article')
 export class ArticleController {
@@ -13,9 +16,15 @@ export class ArticleController {
 	}
 
 	@Get('/all')
-	@UseInterceptors(ClassSerializerInterceptor)
-	async findAll(): Promise<Array<ArticleEntity>> {
-		return await this.articleService.findAll();
+	async findAll(@Response() response) {
+		const articles = await this.articleService.findAll();
+		console.log(articles);
+		if (!!articles) {
+			response.status(HttpStatus.OK).json(articles);
+		} else {
+			response.status(HttpStatus.INTERNAL_SERVER_ERROR)
+		}
+		return response;
 	}
 
 	@Get('/count')
